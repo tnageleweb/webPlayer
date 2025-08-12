@@ -11,6 +11,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+    font-family: Arial, sans-serif;
   }
   #loadButton {
     background: #1DB954;
@@ -24,6 +26,7 @@
     align-items: center;
     box-shadow: 0 8px 15px rgba(29, 185, 84, 0.4);
     transition: box-shadow 0.3s ease;
+    z-index: 10;
   }
   #loadButton:hover {
     box-shadow: 0 12px 20px rgba(29, 185, 84, 0.7);
@@ -36,6 +39,42 @@
     width: 36px;
     height: 36px;
   }
+  /* Loading overlay styles */
+  #loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right:0;
+    bottom: 0;
+    background: rgba(18, 18, 18, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-direction: column;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+  }
+  #loadingOverlay.visible {
+    visibility: visible;
+    opacity: 1;
+  }
+  /* Simple spinner */
+  .spinner {
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 </style>
 </head>
 <body>
@@ -47,29 +86,36 @@
 </button>
 <input type="file" id="fileInput" accept=".html" />
 
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div>Loading…</div>
+</div>
+
 <script>
   const loadButton = document.getElementById('loadButton');
   const fileInput = document.getElementById('fileInput');
+  const loadingOverlay = document.getElementById('loadingOverlay');
 
   loadButton.addEventListener('click', () => {
-    console.log('Button clicked - opening file picker');
     fileInput.click();
   });
 
   fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
     if (file) {
-      console.log('File selected:', file.name);
+      // Show loading overlay
+      loadingOverlay.classList.add('visible');
+
       const reader = new FileReader();
       reader.onload = function(e) {
-        console.log('File loaded - replacing document content');
-        document.open();
-        document.write(e.target.result);
-        document.close();
+        // Replace document after a tiny delay to allow overlay to render
+        setTimeout(() => {
+          document.open();
+          document.write(e.target.result);
+          document.close();
+        }, 100);
       };
       reader.readAsText(file);
-    } else {
-      console.log('No file selected');
     }
   });
 </script>
